@@ -1,6 +1,6 @@
 <template>
   <label class="label">
-    <p>{{ field.fieldName }}:</p>
+    <p>{{ (label ?? field.fieldName) || label }}:</p>
 
     <select v-model="vModel">
       <option v-for="option in options" :value="option.value">
@@ -17,6 +17,7 @@
 
   const
     props = defineProps({
+      label: String,
       field: Object,
       fieldPath: String
     }),

@@ -1,6 +1,6 @@
 <template>
   <label class="label">
-    <p>{{ field.fieldName }}:</p>
+    <p>{{ (label ?? field.fieldName) || label }}:</p>
 
     <button v-if="selection" @click="clearSelection">x</button>
 
@@ -19,7 +19,7 @@
   import { useMessageStore } from '../../stores/message'
 
   const
-    props = defineProps(["field", "fieldPath"]),
+    props = defineProps(["label", "field", "fieldPath"]),
     { setOneOf, clearOneOf } = useMessageStore(),
     { vModel, nextFieldPath } = useFieldPath(props),
     initialIndex = props.field.options.indexOf(vModel.value),

@@ -1,6 +1,6 @@
 <template>
   <label class="label">
-    <p>{{ field.fieldName }}:</p>
+    <p>{{ (label ?? field.fieldName) || label }}:</p>
 
     <input :type="inputType" v-model="vModel"/>
   </label>
@@ -12,6 +12,7 @@
 
   const
     props = defineProps({
+      label: String,
       field: Object,
       fieldPath: String
     }),

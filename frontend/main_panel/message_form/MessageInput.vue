@@ -1,6 +1,6 @@
 <template>
   <label class="label">
-    <p>{{ field.fieldName }}:</p>
+    <p>{{ (label ?? field.fieldName) || label }}:</p>
     <p>{{ foundMessage?.name }}</p>
   </label>
 
@@ -18,6 +18,7 @@
 
   const
     props = defineProps({
+      label: String,
       field: Object,
       fieldPath: String
     }),
