@@ -1,8 +1,17 @@
-import { cloneDeep, compact, get, includes, set } from 'lodash-es'
+import { cloneDeep, compact, find, get, includes, set, some } from 'lodash-es'
 import { ref } from "vue"
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { useUIStore } from './ui'
 import { findProtoFor } from '../protobuf_service'
+
+// detect and scrub array syntax
+const scrubBrackets = pathSegment => {
+  const bracketPosition = pathSegment.indexOf('[')
+
+  return (bracketPosition > -1)
+    ? pathSegment.slice(0, bracketPosition)
+    : pathSegment
+}
 
 export const useMessageStore = defineStore('message', () => {
   return {
@@ -22,17 +31,27 @@ export const useMessageStore = defineStore('message', () => {
 
         if(!this.messageFields[currentPath]) {
           // look it up and set it
-          const foundField = this.messageFields[lastPath].find(({ fieldName }) => {
-            return fieldName === pathSegment
+          const lastPathMessageFields = this.messageFields[scrubBrackets(lastPath)]
+          const foundField = lastPathMessageFields.find(({ fieldName, fieldType, options=[] }) => {
+            if(fieldType === 'oneof') {
+              return some(options, { fieldName: scrubBrackets(pathSegment) })
+            } else {
+              return fieldName === scrubBrackets(pathSegment)
+            }
           })
 
           if(!foundField) {
-            console.warn('field not found:', pathSegment, this.messageFields[lastPath])
+            console.warn('field not found:', pathSegment, lastPathMessageFields)
             this.messageFields[currentPath] = []
 
           } else {
-            const protobuf = findProtoFor(foundField)
-            if(!protobuf) { throw new Error(`Protobuf not found for: ${foundField}`)}
+            const toFind = (foundField.fieldType === 'oneof')
+              ? find(foundField.options, { fieldName: scrubBrackets(pathSegment) })
+              : foundField
+            const protobuf = findProtoFor(toFind)
+            if(!protobuf) {
+              throw new Error(`Protobuf not found for: ${toFind}`)
+            }
 
             // cache a copy of the fields in the protobuf
             this.messageFields[currentPath] = cloneDeep(protobuf.fields)
@@ -42,7 +61,7 @@ export const useMessageStore = defineStore('message', () => {
         lastPath = currentPath
       })
 
-      return this.messageFields[path]
+      return this.messageFields[lastPath]
     },
 
     // call when a OneOf selection changes
@@ -97,10 +116,10 @@ export const useMessageStore = defineStore('message', () => {
       return get(this.messageObject, pathToGet)
     },
 
-    setDeep: function(pathToSet, valueToSet) {
+    setDeep: function(pathToSet, valueToSet, isArray=false) {
       if(valueToSet?.fieldType) {
         // set the given path to the given fieldname
-        set(this.messageObject, pathToSet, valueToSet.fieldName)
+        set(this.messageObject, pathToSet, isArray ? [valueToSet.fieldName] : valueToSet.fieldName)
 
         if(valueToSet.fieldType === 'message') {
           // make a new path at fieldname and recurse into setDefaults
@@ -116,22 +135,28 @@ export const useMessageStore = defineStore('message', () => {
         return
       }
 
-      set(this.messageObject, pathToSet, valueToSet)
+      set(this.messageObject, pathToSet, isArray ? [valueToSet] : valueToSet)
+    },
+
+    popDeep: function(pathToRemove) {
+      this.getDeep(pathToRemove).pop()
     },
 
     setDefault: function(field, path) {
+      const isArray = field.rule === 'repeated'
+
       // nested message, look up the protobuf type and recurse
       if(field.fieldType === 'message') {
-        this.setDeep(path, field)
+        this.setDeep(path, field, isArray)
         return
       }
 
       const defaultValue = defaultValueForField(field)
 
       if(defaultValue || defaultValue === false) {
-        this.setDeep(path, defaultValue)
+        this.setDeep(path, defaultValue, isArray)
       } else {
-        this.setDeep(path, null)
+        this.setDeep(path, null, isArray)
       }
     },
 
