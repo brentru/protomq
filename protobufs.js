@@ -1,5 +1,5 @@
 import protobuf from "protobufjs"
-import protobufJSON from "./protobufs/bundle.json" assert { type: "json" }
+import protobufJSON from "./protobufs/bundle.json" with { type: "json" }
 
 
 const protobufRoot = protobuf.Root.fromJSON(protobufJSON)
