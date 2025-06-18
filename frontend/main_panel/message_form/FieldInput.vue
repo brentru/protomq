@@ -1,5 +1,5 @@
 <template>
-  <InputComponent v-if="isRepeated" :field="repeatedField" :fieldPath="fieldPath"/>
+  <RepeatedFieldInput v-if="isRepeated" :field="field" :fieldPath="fieldPath"/>
   <InputComponent v-else :field="field" :fieldPath="fieldPath"/>
 </template>
 
@@ -9,6 +9,7 @@
   import EnumInput from './EnumInput.vue'
   import MessageInput from './MessageInput.vue'
   import PrimitiveInput from './PrimitiveInput.vue'
+  import RepeatedFieldInput from './RepeatedFieldInput.vue'
 
   const
     props = defineProps(["field", "fieldPath"]),
@@ -22,10 +23,5 @@
 
     InputComponent = computed(() => fieldTypeComponentMap[props.field.fieldType]),
 
-    isRepeated = computed(() => props.field.rule === 'repeated' ),
-
-    repeatedField = computed(() => ({
-      ...props.field,
-      fieldName: `${props.field.fieldName}[0]`
-    }))
+    isRepeated = computed(() => props.field.rule === 'repeated' )
 </script>
