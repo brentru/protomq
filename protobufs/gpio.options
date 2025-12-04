@@ -1,0 +1,7 @@
+# gpio.options
+esmp.v1.gpio.GPIOAdd.pin_name max_length:32
+esmp.v1.gpio.GPIOAdded.pin_name max_length:32
+esmp.v1.gpio.GPIORemove.pin_name max_length:32
+esmp.v1.gpio.GPIORemoved.pin_name max_length:32
+esmp.v1.gpio.GPIOWrite.pin_name max_length:32
+esmp.v1.gpio.GPIOEvent.pin_name max_length:32

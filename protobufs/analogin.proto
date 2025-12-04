@@ -1,0 +1,40 @@
+syntax = "proto3";
+package esmp.v1.analogin;
+
+/**
+* AnalogInAdd adds an analog input pin to the device.
+*/
+message AnalogInAdd {
+  string pin_name = 1;                /** The name of the analog pin to add. */
+  float sample_mode_poll_period = 3;  /** Polling period in seconds. */
+}
+
+/**
+* AnalogInAdded is sent when an analog input pin has been added to the device.
+*/
+message AnalogInAdded {
+  string pin_name = 1;  /** The name of the analog pin that was added. */
+}
+
+/**
+* AnalogInRemove removes an analog input pin from the device.
+*/
+message AnalogInRemove {
+  string pin_name = 1;  /** The name of the analog pin to remove. */
+}
+
+/**
+* AnalogInRemoved is sent when an analog input pin has been removed
+* from the device.
+*/
+message AnalogInRemoved {
+  string pin_name = 1;  /** The name of the analog pin that was removed. */
+}
+
+/**
+* AnalogInEvent is the value of an Analog pin for publishing to the broker
+*/
+message AnalogInEvent {
+  string pin_name = 1;  /** The name of the pin that was read. */
+  float value = 2;      /** The raw analog value (ADC) read from the pin. */
+}

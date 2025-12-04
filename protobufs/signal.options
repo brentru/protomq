@@ -1,0 +1,3 @@
+# signal.options
+esmp.v1.SignalRequest   submsg_callback:true
+esmp.v1.SignalResponse  submsg_callback:true

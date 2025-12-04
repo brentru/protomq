@@ -1,0 +1,40 @@
+syntax = "proto3";
+package temperature.v1.gpio;
+
+
+/**
+* TemperatureSensorUnit specifies the unit of temperature measurement.
+*/
+enum TemperatureSensorUnit {
+  TEMPERATURE_SENSOR_UNIT_UNSPECIFIED = 0;
+  TEMPERATURE_SENSOR_UNIT_CELSIUS     = 1;
+  TEMPERATURE_SENSOR_UNIT_FAHRENHEIT  = 2;
+}
+
+
+/**
+* TemperatureSensorAdd adds a temperature sensor to the device.
+*/
+message TemperatureSensorAdd {
+  string sensor_pin       = 1;
+  int32 sensor_resolution = 2;
+}
+
+/**
+* TemperatureSensorAdded is sent when a temperature
+* sensor has been added to the device.
+*/
+message TemperatureSensorAdded {
+  string sensor_pin = 1;
+  bool did_add      = 2;
+}
+
+/**
+* TemperatureSensorEvent is sent when a temperature sensor reading is taken.
+*/
+message TemperatureSensorEvent {
+  string sensor_pin             = 1;
+  float temperature_celsius     = 2;
+  float temperature_fahrenheit  = 3;
+  TemperatureSensorUnit si_unit = 4;
+}

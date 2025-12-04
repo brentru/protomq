@@ -1,0 +1,6 @@
+# analogin.options
+esmp.v1.analogin.AnalogInAdd.pin_name max_length:32
+esmp.v1.analogin.AnalogInAdded.pin_name max_length:32
+esmp.v1.analogin.AnalogInRemove.pin_name max_length:32
+esmp.v1.analogin.AnalogInRemoved.pin_name max_length:32
+esmp.v1.analogin.AnalogInEvent.pin_name max_length:32

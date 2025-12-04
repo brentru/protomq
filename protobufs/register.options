@@ -1,0 +1,3 @@
+# register.options
+esmp.v1.register.RegisterAdd.device_identifier max_length:32
+esmp.v1.register.RegisterAdded.device_identifier max_length:32

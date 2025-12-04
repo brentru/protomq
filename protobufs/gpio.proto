@@ -1,0 +1,70 @@
+syntax = "proto3";
+package esmp.v1.gpio;
+
+/**
+* GPIODirection specifies the pin's direction, INPUT/INPUT_PULL_UP/OUTPUT.
+*/
+enum GPIODirection {
+  GPIO_DIRECTION_UNSPECIFIED   = 0; /** Invalid Direction from Broker. */
+  GPIO_DIRECTION_INPUT         = 1; /** Set the pin to behave as an input. */
+  GPIO_DIRECTION_INPUT_PULL_UP = 2; /** Set the pin to behave as an input. */
+  GPIO_DIRECTION_OUTPUT        = 3; /** Set the pin to behave as an output. */
+}
+
+/**
+* GPIOSampleMode specifies how the pin is sampled for changes.
+*/
+enum GPIOSampleMode {
+  GPIO_SAMPLE_MODE_UNSPECIFIED = 0; /** Invalid Sample Mode from Broker. */
+  GPIO_SAMPLE_MODE_POLL      = 1; /** Poll the pin for changes at intervals. */
+  GPIO_SAMPLE_MODE_EVENT       = 2; /** Monitor hardware for changes. */
+}
+
+/**
+* GPIOAdd adds a GPIO pin to the device with the specified
+* direction and sampling mode.
+*/
+message GPIOAdd {
+  string pin_name = 1;  /** The name of the GPIO pin to add. */
+  GPIODirection direction = 2; /** The pin's direction */
+  GPIOSampleMode sample_mode = 3; /** The pin's sampling mode. */
+  float sample_mode_poll_period = 4; /** Polling period in seconds */
+}
+
+/**
+* GPIOAdded is sent when a GPIO pin has been successfully added to the device.
+*/
+message GPIOAdded {
+  string pin_name = 1;  /** The name of the GPIO pin that was added. */
+}
+
+/**
+* GPIORemove removes a GPIO pin from the device.
+*/
+message GPIORemove {
+  string pin_name = 1;  /** The name of the GPIO pin to remove. */
+}
+
+/**
+* GPIORemoved is sent when a GPIO pin has been successfully removed
+* from the device.
+*/
+message GPIORemoved {
+  string pin_name = 1;  /** The name of the GPIO pin that was removed. */
+}
+
+/**
+* GPIOWrite writes a boolean value to a GPIO pin.
+*/
+message GPIOWrite {
+  string pin_name = 1;  /** The name of the GPIO pin to write to. */
+  bool value = 2;       /** The boolean value to write to the GPIO pin. */
+}
+
+/**
+* GPIOEvent notifies about a value change on a GPIO pin.
+*/
+message GPIOEvent {
+  string pin_name = 1;  /** The name of the pin where data is coming from. */
+  bool value = 2;       /** The boolean value from the pin. */
+}

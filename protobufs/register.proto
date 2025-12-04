@@ -1,0 +1,19 @@
+syntax = "proto3";
+package esmp.v1.register;
+
+/**
+* RegisterAdd registers a ESMP device to the ESMP Broker.
+*/
+message RegisterAdd {
+  string device_identifier = 1;  /** The name of the device to register. */
+}
+
+/**
+* RegisterAdded is sent when a device has been successfully registered
+* by the ESMP Broker.
+*/
+message RegisterAdded {
+  string device_identifier = 1;  /** The name of the device. */
+  uint32 pin_cnt_digital   = 2;  /** # of device's digital pins. */
+  uint32 pin_cnt_analog    = 3;  /** # of device's analog pins. */
+}

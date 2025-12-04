@@ -34,6 +34,58 @@ const
     })
   }
 
+// LATENCY TRACKING
+const
+  LATENCY_TIMEOUT_MS = 30 * 1000,
+  isWebClient = clientId => typeof clientId === 'string' && clientId.startsWith('web-'),
+  shouldIgnoreTopic = topic => topic?.startsWith('metrics/') || topic?.startsWith('state/'),
+  latencyTracker = (() => {
+    let pendingProbe = null
+
+    return {
+      start(sendTopic, clientId) {
+        console.log(`[latency] start publish sendTopic=${sendTopic} client=${clientId}`)
+        pendingProbe = {
+          sendTopic,
+          clientId,
+          startedAt: Date.now(),
+        }
+      },
+      clearIfStale(now) {
+        if(pendingProbe && now - pendingProbe.startedAt > LATENCY_TIMEOUT_MS) {
+          console.log(`[latency] stale measurement cleared for sendTopic=${pendingProbe.sendTopic}`)
+          pendingProbe = null
+        }
+      },
+      maybeRecord(broker, packet, client) {
+        if(!pendingProbe) { return }
+
+        const now = Date.now()
+        this.clearIfStale(now)
+        if(!pendingProbe) { return }
+
+        // ignore publishes from the same web client that initiated the send
+        if(client?.id && client.id === pendingProbe.clientId) { return }
+
+        const latencyMs = now - pendingProbe.startedAt
+        const responderClientId = client?.id || 'internal'
+        const metric = {
+          latencyMs,
+          startedAt: pendingProbe.startedAt,
+          completedAt: now,
+          sendTopic: pendingProbe.sendTopic,
+          sendClientId: pendingProbe.clientId,
+          responseTopic: packet.topic,
+          responseClientId: responderClientId,
+        }
+
+        console.log(`[latency] send->payload ${latencyMs}ms | sendTopic=${pendingProbe.sendTopic} | responseTopic=${packet.topic} | responder=${responderClientId}`)
+
+        pendingProbe = null
+      }
+    }
+  })()
+
 // GROUPS OF HANDLERS
 const
   LOGGING = {
@@ -68,6 +120,23 @@ const
     clientDisconnect: emitState,
     subscribe: emitState,
     unsubscribe: emitState,
+  },
+  LATENCY_INSTRUMENTATION = {
+    publish: (broker, packet, client) => {
+      // ignore instrumentation chatter
+      if(shouldIgnoreTopic(packet.topic)) { return }
+
+      const clientId = client?.id
+      const isSendClick = isWebClient(clientId)
+
+      // record latency on first publish after a send click (any responder, including internal)
+      latencyTracker.maybeRecord(broker, packet, client)
+
+      // start tracking for any publish initiated by the web client
+      if(isSendClick) {
+        latencyTracker.start(packet.topic, clientId)
+      }
+    }
   }
 
 export const
@@ -79,4 +148,9 @@ export const
   addReactiveEmitters = broker => {
     console.log(`Adding Reactive State-Change Emitter Listeners to Broker '${broker.id}'`)
     addListeners(broker, REACTIVE_EMITTERS, { curryBroker: true })
+  },
+
+  addLatencyInstrumentation = broker => {
+    console.log(`Adding Latency Instrumentation Listeners to Broker '${broker.id}'`)
+    addListeners(broker, LATENCY_INSTRUMENTATION, { curryBroker: true })
   }
