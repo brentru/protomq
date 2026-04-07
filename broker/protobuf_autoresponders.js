@@ -35,7 +35,7 @@ export const
   addDefaultPBResponses = broker => {
     console.log("PBResponse Listener: Register")
     broker.subscribe(
-      '+/ws-d2b/+/',
+      '+/ws-d2b/+',
       (packet, callback) => {
         const d2bRequest = DeviceToBroker.decode(packet.payload)
 
